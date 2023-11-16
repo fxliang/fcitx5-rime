@@ -105,12 +105,12 @@ std::string RimeState::subModeLabel() {
             result = "A";
         } else if (status.schema_name && status.schema_name[0] != '.') {
             result = status.schema_name;
-            if (!result.empty() &&
-                utf8::lengthValidated(result) != utf8::INVALID_LENGTH) {
-                result = result.substr(
-                    0, std::distance(result.begin(),
-                                     utf8::nextChar(result.begin())));
-            }
+            //if (!result.empty() &&
+            //    utf8::lengthValidated(result) != utf8::INVALID_LENGTH) {
+            //    result = result.substr(
+            //        0, std::distance(result.begin(),
+            //                         utf8::nextChar(result.begin())));
+            //}
         }
     });
     return result;
