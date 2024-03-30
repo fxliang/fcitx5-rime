@@ -711,10 +711,10 @@ void RimeEngine::updateActionsForSchema(const std::string &schema) {
                 continue;
             }
             std::string optionName = name;
-            if (optionName == RIME_ASCII_MODE) {
-                // imAction_ has latin mode that does the same
-                continue;
-            }
+            //if (optionName == RIME_ASCII_MODE) {
+            //    // imAction_ has latin mode that does the same
+            //    continue;
+            //}
 
             optionActions_[schema].emplace_back(std::make_unique<ToggleAction>(
                 this, schema, optionName, labels[0], labels[1]));
