@@ -76,7 +76,7 @@ RimeSessionId RimeState::session(bool requestNewSession) {
 
 void RimeState::clear() {
     if (auto session = this->session()) {
-        engine_->api()->clear_composition(session);
+        engine_->api()->end_composition(session);
     }
 }
 
