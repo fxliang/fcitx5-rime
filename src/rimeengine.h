@@ -75,6 +75,12 @@ FCITX_CONFIG_ENUM_NAME_WITH_I18N(SwitchInputMethodBehavior, N_("Clear"),
                                  N_("Commit composing text"),
                                  N_("Commit commit preview"))
 
+enum class ShiftKeyBehavior { Auto, DisableFcitxToggle, EnableFcitxToggle };
+
+FCITX_CONFIG_ENUM_NAME_WITH_I18N(ShiftKeyBehavior, N_("Auto"),
+                                 N_("Disable Fcitx Shift_L toggle"),
+                                 N_("Enable Fcitx Shift_L toggle"))
+
 FCITX_CONFIGURATION(
     RimeEngineConfig,
     OptionWithAnnotation<PreeditMode, PreeditModeI18NAnnotation> preeditMode{
@@ -111,9 +117,12 @@ FCITX_CONFIGURATION(
         isApple() ? fcitx::KeyList{fcitx::Key("Control+Alt+grave")}
                   : fcitx::KeyList{}};
     fcitx::Option<fcitx::KeyList> synchronize{
-        this, "Synchronize", _("Synchronize"), {}};);
+        this, "Synchronize", _("Synchronize"), {}};
+    OptionWithAnnotation<ShiftKeyBehavior, ShiftKeyBehaviorI18NAnnotation>
+        shiftKeyBehavior{this, "ShiftKeyBehavior", _("Shift Key Behavior"),
+                         ShiftKeyBehavior::DisableFcitxToggle};);
 
-class RimeEngine final : public InputMethodEngineV2 {
+class RimeEngine final : public InputMethodEngineV4Point1 {
 public:
     RimeEngine(Instance *instance);
     ~RimeEngine();
@@ -145,6 +154,7 @@ public:
                                 InputContext & /*unused*/) override;
     std::string subModeLabelImpl(const InputMethodEntry & /*unused*/,
                                  InputContext & /*unused*/) override;
+    bool supportsAltTrigger() const override;
     const RimeEngineConfig &config() const { return config_; }
 
     rime_api_t *api() { return api_; }
