@@ -1,0 +1,97 @@
+diff --git a/src/lib/fcitx/inputmethodengine.cpp b/src/lib/fcitx/inputmethodengine.cpp
+index 83787083..ddd677f3 100644
+--- a/src/lib/fcitx/inputmethodengine.cpp
++++ b/src/lib/fcitx/inputmethodengine.cpp
+@@ -83,4 +83,17 @@ void InputMethodEngineV4::virtualKeyboardEventImpl(const InputMethodEntry &,
+     throw std::logic_error("Not implemented virtualKeyboardEventImpl");
+ }
+ 
++void InputMethodEngineV4Point1::virtualKeyboardEventImpl(
++    const InputMethodEntry &entry, VirtualKeyboardEvent &event) {
++    // Default V4.1 implementation: forward to keyEvent
++    if (auto virtualKeyEvent = event.toKeyEvent()) {
++        keyEvent(entry, *virtualKeyEvent);
++        if (virtualKeyEvent->accepted()) {
++            event.accept();
++        } else if (!event.text().empty()) {
++            event.inputContext()->commitString(event.text());
++        }
++    }
++}
++
+ } // namespace fcitx
+diff --git a/src/lib/fcitx/inputmethodengine.h b/src/lib/fcitx/inputmethodengine.h
+index 3c1f2309..f1ece07e 100644
+--- a/src/lib/fcitx/inputmethodengine.h
++++ b/src/lib/fcitx/inputmethodengine.h
+@@ -205,6 +205,31 @@ public:
+                              VirtualKeyboardEvent &VirtualKeyboardEvent) = 0;
+ };
+ 
++/**
++ * @brief Input Method Engine V4.1 interface
++ * @since 5.2.0
++ *
++ * Extends InputMethodEngineV4 with support for controlling altTrigger behavior.
++ * Engines that handle Shift_L themselves (e.g., Rime for Chinese/English toggle)
++ * can override supportsAltTrigger() to return false.
++ */
++class FCITXCORE_EXPORT InputMethodEngineV4Point1 : public InputMethodEngineV4 {
++public:
++    /**
++     * @brief Whether this engine supports Fcitx5's altTrigger (Shift_L toggle)
++     * @return true to enable altTrigger (default), false to disable
++     * @since 5.2.0
++     */
++    virtual bool supportsAltTrigger() const { return true; }
++
++    /**
++     * @brief Default implementation for V4.1 engines
++     * Forwards to keyEvent() for backward compatibility
++     */
++    void virtualKeyboardEventImpl(const InputMethodEntry &entry,
++                                  VirtualKeyboardEvent &event) override;
++};
++
+ } // namespace fcitx
+ 
+ #endif // _FCITX_INPUTMETHODENGINE_H_
+diff --git a/src/lib/fcitx/instance.cpp b/src/lib/fcitx/instance.cpp
+index 8c7ffab3..541bea61 100644
+--- a/src/lib/fcitx/instance.cpp
++++ b/src/lib/fcitx/instance.cpp
+@@ -2170,13 +2170,20 @@ bool Instance::canTrigger() const {
+     return (imManager.currentGroup().inputMethodList().size() > 1);
+ }
+ 
+-bool Instance::canAltTrigger(InputContext *ic) const {
++bool Instance::canAltTrigger(InputContext *ic) {
+     if (!canTrigger()) {
+         return false;
+     }
+     FCITX_D();
+     auto *inputState = ic->propertyFor(&d->inputStateFactory_);
+     if (inputState->isActive()) {
++        // Check if engine explicitly disables altTrigger (V4.1+ only)
++        auto *engine = inputMethodEngine(ic);
++        if (auto *engineV4Point1 = dynamic_cast<InputMethodEngineV4Point1 *>(engine)) {
++            if (!engineV4Point1->supportsAltTrigger()) {
++                return false;
++            }
++        }
+         return true;
+     }
+     return inputState->lastIMChangeIsAltTrigger_;
+diff --git a/src/lib/fcitx/instance.h b/src/lib/fcitx/instance.h
+index ace03efc..fbaabf63 100644
+--- a/src/lib/fcitx/instance.h
++++ b/src/lib/fcitx/instance.h
+@@ -579,7 +579,7 @@ private:
+     void handleSignal();
+ 
+     bool canTrigger() const;
+-    bool canAltTrigger(InputContext *ic) const;
++    bool canAltTrigger(InputContext *ic);
+     bool canEnumerate(InputContext *ic) const;
+     bool canChangeGroup() const;
+     bool trigger(InputContext *ic, bool totallyReleased);

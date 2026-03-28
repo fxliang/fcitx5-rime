@@ -86,6 +86,22 @@ msgstr "否"
 msgid "Preedit Mode"
 msgstr "预编辑模式"
 
+#: src/rimeengine.h:79
+msgid "Disable Fcitx Shift_L toggle"
+msgstr "禁用 Fcitx Shift_L 切换"
+
+#: src/rimeengine.h:80
+msgid "Enable Fcitx Shift_L toggle"
+msgstr "启用 Fcitx Shift_L 切换"
+
+#: src/rimeengine.h:78
+msgid "Shift Key Behavior"
+msgstr "Shift 键行为"
+
+#: src/rimeengine.h:78
+msgid "Auto"
+msgstr "自动"
+
 #: src/rimeengine.h:59
 msgid "Program"
 msgstr "程序"

@@ -737,4 +737,19 @@ PropertyPropagatePolicy RimeEngine::getSharedStatePolicy() {
     }
 }
 
+bool RimeEngine::supportsAltTrigger() const {
+    // Default: disable Fcitx Shift_L toggle (let Rime handle it)
+    switch (*config_.shiftKeyBehavior) {
+    case ShiftKeyBehavior::EnableFcitxToggle:
+        return true;   // Let Fcitx handle Shift_L
+    case ShiftKeyBehavior::DisableFcitxToggle:
+        return false;  // Rime handles Shift_L
+    case ShiftKeyBehavior::Auto:
+    default:
+        // Auto mode: disable Fcitx toggle if Rime has Chinese/English switch
+        // For now, default to disabling Fcitx toggle
+        return false;
+    }
+}
+
 } // namespace fcitx::rime

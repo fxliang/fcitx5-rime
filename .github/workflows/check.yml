@@ -41,8 +41,16 @@ jobs:
           pacman -Syu --noconfirm base-devel clang cmake ninja extra-cmake-modules fmt libuv librime librime-data
       - uses: actions/checkout@v4
         with:
+          path: fcitx5-rime
+      - name: Copy patch to workspace root
+        run: cp fcitx5-rime/fcitx5-alt-trigger-v4point1.patch .
+      - uses: actions/checkout@v4
+        with:
           repository: fcitx/fcitx5
           path: fcitx5
+      - name: Apply fcitx5 patch
+        run: |
+          git apply ../fcitx5-alt-trigger-v4point1.patch
       - name: Cache fcitx5 data files
         uses: actions/cache@v4
         with:
@@ -56,9 +64,6 @@ jobs:
           cmake-option: >-
             -DENABLE_KEYBOARD=Off -DENABLE_X11=Off -DENABLE_WAYLAND=Off -DENABLE_ENCHANT=Off
             -DENABLE_DBUS=Off -DENABLE_SERVER=Off -DENABLE_EMOJI=Off -DUSE_SYSTEMD=Off
-      - uses: actions/checkout@v4
-        with:
-          path: fcitx5-rime
       - name: Init CodeQL
         uses: github/codeql-action/init@v3
         with:

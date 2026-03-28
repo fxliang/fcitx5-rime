@@ -79,6 +79,22 @@ msgstr ""
 msgid "Preedit Mode"
 msgstr ""
 
+#: src/rimeengine.h:79
+msgid "Disable Fcitx Shift_L toggle"
+msgstr ""
+
+#: src/rimeengine.h:80
+msgid "Enable Fcitx Shift_L toggle"
+msgstr ""
+
+#: src/rimeengine.h:78
+msgid "Shift Key Behavior"
+msgstr ""
+
+#: src/rimeengine.h:78
+msgid "Auto"
+msgstr ""
+
 #: src/rimeengine.h:59
 msgid "Program"
 msgstr ""
