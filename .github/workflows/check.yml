@@ -42,15 +42,14 @@ jobs:
       - uses: actions/checkout@v4
         with:
           path: fcitx5-rime
-      - name: Copy patch to workspace root
-        run: cp fcitx5-rime/fcitx5-alt-trigger-v4point1.patch .
       - uses: actions/checkout@v4
         with:
           repository: fcitx/fcitx5
           path: fcitx5
       - name: Apply fcitx5 patch
+        working-directory: fcitx5
         run: |
-          git apply ../fcitx5-alt-trigger-v4point1.patch
+          git apply ../fcitx5-rime/fcitx5-alt-trigger-v4point1.patch
       - name: Cache fcitx5 data files
         uses: actions/cache@v4
         with:
