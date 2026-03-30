@@ -133,3 +133,7 @@ msgstr "同期"
 #: src/rimeengine.h:100
 msgid "User data dir"
 msgstr "ユーザーデータディレクトリ"
+
+#: src/rimeengine.h:111
+msgid "Schema Selector"
+msgstr "スキーマ選択"
