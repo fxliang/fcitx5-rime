@@ -130,6 +130,10 @@ msgstr "Synchronisieren"
 #: src/rimeengine.h:100
 msgid "User data dir"
 msgstr ""
+
+#: src/rimeengine.h:111
+msgid "Schema Selector"
+msgstr "Schema-Auswahl"
 #: src/rimeengine.h:79
 msgid "Disable Fcitx Shift_L toggle"
 msgstr "Fcitx Shift_L-Umschaltung deaktivieren"
@@ -145,4 +149,3 @@ msgstr "Shift-Tasten-Verhalten"
 #: src/rimeengine.h:78
 msgid "Auto"
 msgstr "Automatisch"
-

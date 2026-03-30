@@ -81,6 +81,9 @@ FCITX_CONFIG_ENUM_NAME_WITH_I18N(ShiftKeyBehavior, N_("Auto"),
                                  N_("Disable Fcitx Shift_L toggle"),
                                  N_("Enable Fcitx Shift_L toggle"))
 
+FCITX_CONFIGURATION(RimeSchemaSelectorConfig,
+                    Option<std::string> items{this, "Items", _("Items"), ""};);
+
 FCITX_CONFIGURATION(
     RimeEngineConfig,
     OptionWithAnnotation<PreeditMode, PreeditModeI18NAnnotation> preeditMode{
@@ -112,6 +115,9 @@ FCITX_CONFIGURATION(
                                         .string(),
                                     "\"", "\"\"\""),
             "\"")};
+    ExternalOption schemaSelector{
+        this, "SchemaSelector", _("Schema Selector"),
+        "fcitx://multiselect/addon/rime/schema-selector?option=Items&min=1"};
     fcitx::Option<fcitx::KeyList> deploy{
         this, "Deploy", _("Deploy"),
         isApple() ? fcitx::KeyList{fcitx::Key("Control+Alt+grave")}
@@ -139,13 +145,14 @@ public:
     auto &factory() { return factory_; }
 
     const Configuration *getConfig() const override { return &config_; }
+    const Configuration *getSubConfig(const std::string &path) const override;
     void setConfig(const RawConfig &config) override {
         config_.load(config, true);
         safeSaveAsIni(config_, "conf/rime.conf");
         updateConfig();
     }
     void setSubConfig(const std::string &path,
-                      const RawConfig & /*unused*/) override;
+                      const RawConfig &config) override;
     void updateConfig();
 
     std::string subMode(const InputMethodEntry & /*entry*/,
@@ -215,6 +222,7 @@ private:
     RimeEngineConfig config_;
     std::unordered_map<std::string, std::unordered_map<std::string, bool>>
         appOptions_;
+    mutable RimeSchemaSelectorConfig schemaSelectorConfig_;
 
     FCITX_ADDON_DEPENDENCY_LOADER(notifications, instance_->addonManager());
 

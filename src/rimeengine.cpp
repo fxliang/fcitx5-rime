@@ -40,11 +40,14 @@
 #include <list>
 #include <memory>
 #include <rime_api.h>
+#include <rime_levers_api.h>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
 #include <thread>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -106,6 +109,55 @@ std::vector<std::string> getListItemString(rime_api_t *api, RimeConfig *config,
         values.emplace_back(value);
     }
     return values;
+}
+
+std::string encodeSchemaSelectorItems(
+    const std::vector<std::string> &selectedSchemas,
+    const std::vector<std::pair<std::string, std::string>> &schemas) {
+    std::unordered_set<std::string> selectedSet(selectedSchemas.begin(),
+                                                selectedSchemas.end());
+    std::ostringstream out;
+    for (size_t i = 0; i < schemas.size(); i++) {
+        const auto &[id, name] = schemas[i];
+        out << (selectedSet.count(id) ? '1' : '0') << '\t' << id << '\t'
+            << name;
+        if (i + 1 < schemas.size()) {
+            out << '\n';
+        }
+    }
+    return out.str();
+}
+
+bool decodeSchemaSelectorItems(
+    std::string_view text,
+    std::vector<std::pair<bool, std::pair<std::string, std::string>>> &rows) {
+    rows.clear();
+    std::istringstream in{std::string(text)};
+    std::string line;
+    while (std::getline(in, line)) {
+        if (line.empty()) {
+            continue;
+        }
+        const auto firstTab = line.find('\t');
+        if (firstTab == std::string::npos || firstTab != 1) {
+            return false;
+        }
+        const auto secondTab = line.find('\t', firstTab + 1);
+        if (secondTab == std::string::npos || secondTab == firstTab + 1) {
+            return false;
+        }
+        const char selectedChar = line[0];
+        if (selectedChar != '0' && selectedChar != '1') {
+            return false;
+        }
+        std::string schemaId =
+            line.substr(firstTab + 1, secondTab - firstTab - 1);
+        std::string schemaName = line.substr(secondTab + 1);
+        rows.emplace_back(
+            selectedChar == '1',
+            std::make_pair(std::move(schemaId), std::move(schemaName)));
+    }
+    return true;
 }
 
 rime_api_t *EnsureRimeApi() {
@@ -319,12 +371,157 @@ void RimeEngine::reloadConfig() {
 }
 
 void RimeEngine::setSubConfig(const std::string &path,
-                              const RawConfig & /*unused*/) {
+                              const RawConfig &config) {
     if (path == "deploy") {
         deploy();
     } else if (path == "sync") {
         sync(/*userTriggered=*/true);
+    } else if (path == "schema-selector") {
+        std::vector<std::pair<bool, std::pair<std::string, std::string>>> rows;
+        if (const auto itemsConfig = config.get("Items");
+            !itemsConfig ||
+            !decodeSchemaSelectorItems(itemsConfig->value(), rows)) {
+            RIME_ERROR() << "Schema selector update ignored: bad item payload.";
+            return;
+        }
+        RIME_DEBUG() << "Schema selector update payload rows=" << rows.size();
+        std::vector<std::string> selected;
+        selected.reserve(rows.size());
+        for (const auto &row : rows) {
+            if (row.first) {
+                selected.push_back(row.second.first);
+            }
+        }
+        if (selected.empty()) {
+            RIME_ERROR() << "Schema selector update ignored: empty selection.";
+            return;
+        }
+
+        auto *module = api_->find_module("levers");
+        if (!module || !module->get_api) {
+            RIME_ERROR()
+                << "Schema selector update ignored: missing levers module.";
+            return;
+        }
+        auto *leversApi = reinterpret_cast<RimeLeversApi *>(module->get_api());
+        if (!leversApi || !leversApi->switcher_settings_init ||
+            !leversApi->load_settings || !leversApi->save_settings ||
+            !leversApi->select_schemas || !leversApi->custom_settings_destroy) {
+            RIME_ERROR()
+                << "Schema selector update ignored: levers API unavailable.";
+            return;
+        }
+        auto *settings = leversApi->switcher_settings_init();
+        if (!settings) {
+            RIME_ERROR() << "Schema selector update ignored: failed to init "
+                            "switcher settings.";
+            return;
+        }
+        auto *customSettings = reinterpret_cast<RimeCustomSettings *>(settings);
+        if (!leversApi->load_settings(customSettings)) {
+            leversApi->custom_settings_destroy(customSettings);
+            RIME_ERROR() << "Schema selector update ignored: failed to load "
+                            "switcher settings.";
+            return;
+        }
+        std::vector<const char *> schemaIds;
+        schemaIds.reserve(selected.size());
+        for (const auto &id : selected) {
+            schemaIds.push_back(id.c_str());
+        }
+        const Bool ok = leversApi->select_schemas(settings, schemaIds.data(),
+                                                  schemaIds.size());
+        if (ok && !leversApi->save_settings(customSettings)) {
+            leversApi->custom_settings_destroy(customSettings);
+            RIME_ERROR() << "Schema selector update failed: save_settings "
+                            "returned false.";
+            return;
+        }
+        leversApi->custom_settings_destroy(customSettings);
+        if (!ok) {
+            RIME_ERROR() << "Schema selector update failed: select_schemas "
+                            "returned false.";
+            return;
+        }
+        RIME_DEBUG() << "Schema selector update selected=" << selected.size();
+
+        allowNotification();
+        deploy();
     }
+}
+
+const Configuration *RimeEngine::getSubConfig(const std::string &path) const {
+    if (path != "schema-selector") {
+        return nullptr;
+    }
+    auto *module = api_->find_module("levers");
+    if (!module || !module->get_api) {
+        return nullptr;
+    }
+    auto *leversApi = reinterpret_cast<RimeLeversApi *>(module->get_api());
+    if (!leversApi || !leversApi->switcher_settings_init ||
+        !leversApi->load_settings || !leversApi->get_available_schema_list ||
+        !leversApi->get_selected_schema_list ||
+        !leversApi->schema_list_destroy ||
+        !leversApi->custom_settings_destroy) {
+        RIME_ERROR() << "Schema selector getSubConfig unavailable: levers API "
+                        "incomplete.";
+        return nullptr;
+    }
+    auto *settings = leversApi->switcher_settings_init();
+    if (!settings) {
+        RIME_ERROR() << "Schema selector getSubConfig failed: "
+                        "switcher_settings_init returned null.";
+        return nullptr;
+    }
+    auto *customSettings = reinterpret_cast<RimeCustomSettings *>(settings);
+    if (!leversApi->load_settings(customSettings)) {
+        leversApi->custom_settings_destroy(customSettings);
+        RIME_ERROR() << "Schema selector getSubConfig failed: load_settings "
+                        "returned false.";
+        return nullptr;
+    }
+
+    RimeSchemaList available{};
+    RimeSchemaList selected{};
+    std::vector<std::pair<std::string, std::string>> rows;
+    std::vector<std::string> selectedIds;
+    if (leversApi->get_selected_schema_list(settings, &selected)) {
+        selectedIds.reserve(selected.size);
+        for (size_t i = 0; i < selected.size; i++) {
+            const auto *id = selected.list[i].schema_id;
+            if (id) {
+                selectedIds.emplace_back(id);
+            }
+        }
+        leversApi->schema_list_destroy(&selected);
+    }
+    if (leversApi->get_available_schema_list(settings, &available)) {
+        std::unordered_set<std::string> selectedSet(selectedIds.begin(),
+                                                    selectedIds.end());
+        rows.reserve(available.size);
+        for (size_t i = 0; i < available.size; i++) {
+            const auto *id = available.list[i].schema_id;
+            const auto *name = available.list[i].name;
+            if (id && name && selectedSet.count(id)) {
+                rows.emplace_back(id, name);
+            }
+        }
+        for (size_t i = 0; i < available.size; i++) {
+            const auto *id = available.list[i].schema_id;
+            const auto *name = available.list[i].name;
+            if (id && name && !selectedSet.count(id)) {
+                rows.emplace_back(id, name);
+            }
+        }
+        leversApi->schema_list_destroy(&available);
+    }
+    leversApi->custom_settings_destroy(customSettings);
+    RIME_DEBUG() << "Schema selector getSubConfig selected="
+                 << selectedIds.size() << " available=" << rows.size();
+    schemaSelectorConfig_.items.setValue(
+        encodeSchemaSelectorItems(selectedIds, rows));
+    return &schemaSelectorConfig_;
 }
 
 void RimeEngine::updateConfig() {

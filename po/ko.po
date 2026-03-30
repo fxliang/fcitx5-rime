@@ -131,3 +131,7 @@ msgstr "동기화"
 #: src/rimeengine.h:100
 msgid "User data dir"
 msgstr "사용자 데이터 디렉터리"
+
+#: src/rimeengine.h:111
+msgid "Schema Selector"
+msgstr "스키마 선택기"

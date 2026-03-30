@@ -147,3 +147,7 @@ msgstr "同步"
 #: src/rimeengine.h:100
 msgid "User data dir"
 msgstr "用户数据目录"
+
+#: src/rimeengine.h:111
+msgid "Schema Selector"
+msgstr "方案选择"
