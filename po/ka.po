@@ -3,91 +3,89 @@
 # This file is distributed under the same license as the fcitx5-rime package.
 #
 # Translators:
-# Xuetian Weng <wengxt@gmail.com>, 2017
-# abc Def <hdogan1974@gmail.com>, 2021
-# Emir SARI, 2025
+# Temuri Doghonadze <temuri.doghonadze@gmail.com>, 2026
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: fcitx5-rime\n"
 "Report-Msgid-Bugs-To: fcitx-dev@googlegroups.com\n"
-"POT-Creation-Date: 2025-12-25 20:24+0000\n"
+"POT-Creation-Date: 2026-02-01 20:24+0000\n"
 "PO-Revision-Date: 2017-11-23 05:02+0000\n"
-"Last-Translator: Emir SARI, 2025\n"
-"Language-Team: Turkish (https://app.transifex.com/fcitx/teams/12005/tr/)\n"
-"Language: tr\n"
+"Last-Translator: Temuri Doghonadze <temuri.doghonadze@gmail.com>, 2026\n"
+"Language-Team: Georgian (https://app.transifex.com/fcitx/teams/12005/ka/)\n"
+"Language: ka\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
 
 #: src/rimeengine.h:97
 msgid "Action when switching input method"
-msgstr "Giriş yöntemi değiştirilirken gerçekleştirilecek eylem"
+msgstr ""
 
 #: src/rimeengine.h:58
 msgid "All"
-msgstr "Tümü"
+msgstr "ყველა"
 
 #: src/rimeengine.h:73
 msgid "Clear"
-msgstr "Temizle"
+msgstr "გასუფთავება"
 
 #: src/rimeengine.h:76
 msgid "Commit commit preview"
-msgstr "İşleme önizlemesini işle"
+msgstr ""
 
 #: src/rimeengine.h:75
 msgid "Commit composing text"
-msgstr "Oluşturulan metni işle"
+msgstr ""
 
 #: src/rimeengine.h:64
 msgid "Commit preview"
-msgstr "İşleme önizlemesi"
+msgstr ""
 
 #: src/rimeengine.h:74
 msgid "Commit raw input"
-msgstr "Ham girişi işle"
+msgstr ""
 
 #: src/rimeengine.h:64
 msgid "Composing text"
-msgstr "Metin oluşturuluyor"
+msgstr ""
 
 #: src/rimeengine.h:110 src/rimeengine.cpp:202
 msgid "Deploy"
-msgstr "Dağıt"
+msgstr "განთავსება"
 
 #: src/rimeengine.h:63
 msgid "Do not show"
-msgstr "Gösterme"
+msgstr "აღარ მაჩვენო"
 
 #: src/rimeengine.h:91
 msgid "Fix embedded preedit cursor at the beginning of the preedit"
-msgstr "Ön düzenlemenin başlangıcındaki gömülü ön düzenleme imlecini düzelt"
+msgstr ""
 
 #: src/rimeengine.h:58
 msgid "Follow Global Configuration"
-msgstr "Global yapılandırmayı izle"
+msgstr ""
 
 #: src/rimecandidate.cpp:164
 msgid "Forget word"
-msgstr "Sözcüğü unut"
+msgstr "სიტყვის დავიწყება"
 
 #: src/rimestate.cpp:91 src/rimeengine.cpp:689
 msgid "Latin Mode"
-msgstr "Latin Kipi"
+msgstr ""
 
 #: src/rimeengine.h:59
 msgid "No"
-msgstr "Hayır"
+msgstr "არა"
 
 #: src/rimeengine.h:81
 msgid "Preedit Mode"
-msgstr "Ön Düzenleme Kipi"
+msgstr ""
 
 #: src/rimeengine.h:59
 msgid "Program"
-msgstr "Program"
+msgstr "პროგრამა"
 
 #: src/rimeengine.cpp:560 src/rime.conf.in:2 src/rime-addon.conf.in.in:2
 msgid "Rime"
@@ -95,38 +93,38 @@ msgstr "Rime"
 
 #: src/rime-addon.conf.in.in:3
 msgid "Rime Wrapper For Fcitx"
-msgstr "Fcitx için Rime Sargısı"
+msgstr ""
 
 #: org.fcitx.Fcitx5.Addon.Rime.metainfo.xml.in:7
 msgid "Rime for Fcitx 5"
-msgstr "Fcitx 5 için Rime"
+msgstr ""
 
 #: src/rimeengine.cpp:542
 msgid "Rime has encountered an error. See log for details."
-msgstr "Rime bir hatayla karşılaştı. Ayrıntılar için günlüğe bakın."
+msgstr ""
 
 #: org.fcitx.Fcitx5.Addon.Rime.metainfo.xml.in:8
 msgid "Rime input method"
-msgstr "Rime giriş yöntemi"
+msgstr ""
 
 #: src/rimeengine.cpp:529
 msgid "Rime is ready."
-msgstr "Rime hazır."
+msgstr "Rime მზადაა."
 
 #: src/rimeengine.cpp:526
 msgid ""
 "Rime is under maintenance. It may take a few seconds. Please wait until it "
 "is finished..."
-msgstr "Rime bakımda. Birkaç saniye sürebilir. Lütfen bitene kadar bekleyin…"
+msgstr ""
 
 #: src/rimeengine.h:84
 msgid "Shared Input State"
-msgstr "Paylaşılan Giriş Durumu"
+msgstr ""
 
 #: src/rimeengine.h:114 src/rimeengine.cpp:214
 msgid "Synchronize"
-msgstr "Eşzamanla"
+msgstr "სინქრონიზაცია"
 
 #: src/rimeengine.h:100
 msgid "User data dir"
-msgstr "Kullanıcı veri dizini"
+msgstr ""
