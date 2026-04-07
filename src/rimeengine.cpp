@@ -250,6 +250,16 @@ RimeEngine::RimeEngine(Instance *instance)
     separatorAction_.setSeparator(true);
     instance_->userInterfaceManager().registerAction("fcitx-rime-separator",
                                                      &separatorAction_);
+
+    schemaSelectorAction_.setIcon("fcitx_rime_schema_selector");
+    schemaSelectorAction_.setShortText(_("Schema Selector"));
+    // Use ExternalOption URI format so Android layer can read config parameters
+    // Format:
+    // fcitx://multiselect/addon/{addon}/{path}?option={option}&min={min}
+    instance_->userInterfaceManager().registerAction(
+        "fcitx://multiselect/addon/rime/schema-selector?option=Items&min=1",
+        &schemaSelectorAction_);
+
     deployAction_.setIcon("fcitx_rime_deploy");
     deployAction_.setShortText(_("Deploy"));
     deployAction_.connect<SimpleAction::Activated>([this](InputContext *ic) {
@@ -275,6 +285,7 @@ RimeEngine::RimeEngine(Instance *instance)
     instance_->userInterfaceManager().registerAction("fcitx-rime-sync",
                                                      &syncAction_);
     schemaMenu_.addAction(&separatorAction_);
+    schemaMenu_.addAction(&schemaSelectorAction_);
     schemaMenu_.addAction(&deployAction_);
     schemaMenu_.addAction(&syncAction_);
     globalConfigReloadHandle_ = instance_->watchEvent(

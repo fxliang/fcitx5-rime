@@ -216,6 +216,7 @@ private:
 
     std::unique_ptr<Action> imAction_;
     SimpleAction separatorAction_;
+    SimpleAction schemaSelectorAction_;
     SimpleAction deployAction_;
     SimpleAction syncAction_;
 
