@@ -296,6 +296,7 @@ private:
 FCITX_DECLARE_LOG_CATEGORY(rime_log);
 
 #define RIME_DEBUG() FCITX_LOGC(rime_log, Debug)
+#define RIME_INFO() FCITX_LOGC(rime_log, Info)
 #define RIME_ERROR() FCITX_LOGC(rime_log, Error)
 
 #endif // _FCITX_RIMEENGINE_H_
