@@ -24,6 +24,10 @@ msgstr ""
 msgid "Action when switching input method"
 msgstr ""
 
+#: src/rimeengine.h:154
+msgid "Write librime logs to stderr"
+msgstr ""
+
 #: src/rimeengine.h:58
 msgid "All"
 msgstr ""
@@ -55,6 +59,10 @@ msgstr ""
 #: src/rimeengine.h:110 src/rimeengine.cpp:202
 msgid "Deploy"
 msgstr "배치"
+
+#: src/rimeengine.h:142
+msgid "Deploy hotkey"
+msgstr "재배포 단축키"
 
 #: src/rimeengine.h:63
 msgid "Do not show"
@@ -128,9 +136,29 @@ msgstr ""
 msgid "Synchronize"
 msgstr "동기화"
 
+#: src/rimeengine.h:146
+msgid "Synchronize hotkey"
+msgstr "동기화 단축키"
+
 #: src/rimeengine.h:100
 msgid "User data dir"
 msgstr "사용자 데이터 디렉터리"
+
+#: src/rimeengine.h:103
+msgid "Data directory manager"
+msgstr "데이터 디렉터리 관리"
+
+#: src/rimeengine.h:90 src/rimeengine.h:95
+msgid "Current"
+msgstr "현재"
+
+#: src/rimeengine.h:91 src/rimeengine.h:96
+msgid "Profiles"
+msgstr "프로필"
+
+#: src/rimeengine.h:97
+msgid "Error"
+msgstr "오류"
 
 #: src/rimeengine.h:111
 msgid "Schema Selector"

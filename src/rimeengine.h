@@ -37,6 +37,7 @@
 #include <list>
 #include <memory>
 #include <rime_api.h>
+#include <set>
 #include <string>
 #include <string_view>
 #include <thread>
@@ -84,6 +85,19 @@ FCITX_CONFIG_ENUM_NAME_WITH_I18N(ShiftKeyBehavior, N_("Auto"),
 FCITX_CONFIGURATION(RimeSchemaSelectorConfig,
                     Option<std::string> items{this, "Items", _("Items"), ""};);
 
+FCITX_CONFIGURATION(RimeDataDirStateConfig,
+                    Option<std::string> current{this, "Current", _("Current"),
+                                                "rime"};
+                    Option<std::string> profiles{this, "Profiles",
+                                                 _("Profiles"), "rime"};);
+
+FCITX_CONFIGURATION(RimeDataDirManagerConfig,
+                    Option<std::string> current{this, "Current", _("Current"),
+                                                ""};
+                    Option<std::string> profiles{this, "Profiles",
+                                                 _("Profiles"), ""};
+                    Option<std::string> error{this, "Error", _("Error"), ""};);
+
 FCITX_CONFIGURATION(
     RimeEngineConfig,
     OptionWithAnnotation<PreeditMode, PreeditModeI18NAnnotation> preeditMode{
@@ -115,18 +129,32 @@ FCITX_CONFIGURATION(
                                         .string(),
                                     "\"", "\"\"\""),
             "\"")};
+    ExternalOption dataDirManager{
+        this, "DataDirManager", _("Data directory manager"),
+        "fcitx://addon-dir-profile/addon/rime/profile-manager?app_proto=2"};
     ExternalOption schemaSelector{
         this, "SchemaSelector", _("Schema Selector"),
-        "fcitx://multiselect/addon/rime/schema-selector?option=Items&min=1"};
+        "fcitx://multiselect/addon/rime/"
+        "schema-selector?option=Items&min=1&app_proto=2"};
+    // Keep legacy key options for old app compatibility.
     fcitx::Option<fcitx::KeyList> deploy{
         this, "Deploy", _("Deploy"),
         isApple() ? fcitx::KeyList{fcitx::Key("Control+Alt+grave")}
                   : fcitx::KeyList{}};
     fcitx::Option<fcitx::KeyList> synchronize{
         this, "Synchronize", _("Synchronize"), {}};
+    // Expose explicit run-now actions for new app versions.
+    ExternalOption deployAction{
+        this, "DeployAction", _("Deploy now"),
+        "fcitx://addon-action/addon/rime/deploy?app_proto=2"};
+    ExternalOption synchronizeAction{
+        this, "SynchronizeAction", _("Synchronize now"),
+        "fcitx://addon-action/addon/rime/sync?app_proto=2"};
     OptionWithAnnotation<ShiftKeyBehavior, ShiftKeyBehaviorI18NAnnotation>
         shiftKeyBehavior{this, "ShiftKeyBehavior", _("Shift Key Behavior"),
-                         ShiftKeyBehavior::DisableFcitxToggle};);
+                         ShiftKeyBehavior::DisableFcitxToggle};
+    Option<bool> logToStderr{this, "LogToStderr",
+                             _("Write librime logs to stderr"), true};);
 
 class RimeEngine final : public InputMethodEngineV4Point1 {
 public:
@@ -168,6 +196,14 @@ public:
     const auto &appOptions() const { return appOptions_; }
 
     void rimeStart(bool fullcheck);
+    std::vector<std::string> listDataDirs() const;
+    std::string currentDataDir() const { return currentDataDir_; }
+    bool createDataDir(const std::string &name, std::string *error = nullptr);
+    bool renameDataDir(const std::string &from, const std::string &to,
+                       std::string *error = nullptr);
+    bool deleteDataDir(const std::string &name, std::string *error = nullptr);
+    bool switchDataDir(const std::string &name, bool fullcheck,
+                       std::string *error = nullptr);
 
     RimeState *state(InputContext *ic);
     RimeSessionPool &sessionPool() { return sessionPool_; }
@@ -200,6 +236,14 @@ private:
     void updateStatusArea(RimeSessionId session);
     void refreshSessionPoolPolicy();
     PropertyPropagatePolicy getSharedStatePolicy();
+    void restartRime(bool fullcheck);
+    bool validateDataDirName(const std::string &name,
+                             std::string *error = nullptr) const;
+    bool ensureDataDirExists(const std::string &name,
+                             std::string *error = nullptr) const;
+    void loadDataDirState();
+    void saveDataDirState();
+    std::string dataRootDir() const;
 
     bool constructed_ = false;
     std::string sharedDataDir_;
@@ -224,6 +268,11 @@ private:
     std::unordered_map<std::string, std::unordered_map<std::string, bool>>
         appOptions_;
     mutable RimeSchemaSelectorConfig schemaSelectorConfig_;
+    mutable RimeDataDirManagerConfig dataDirManagerConfig_;
+    RimeDataDirStateConfig dataDirStateConfig_;
+    std::vector<std::string> dataDirs_;
+    std::string currentDataDir_ = "rime";
+    std::string dataDirLastError_;
 
     FCITX_ADDON_DEPENDENCY_LOADER(notifications, instance_->addonManager());
 

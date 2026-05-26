@@ -26,10 +26,18 @@ msgstr ""
 msgid "Action when switching input method"
 msgstr ""
 
+
+#: src/rimeengine.h:142
+msgid "Deploy hotkey"
+msgstr "再配備のホットキー"
 #: src/rimeengine.h:58
 msgid "All"
 msgstr ""
 
+
+#: src/rimeengine.h:146
+msgid "Synchronize hotkey"
+msgstr "同期のホットキー"
 #: src/rimeengine.h:73
 msgid "Clear"
 msgstr ""
@@ -134,6 +142,26 @@ msgstr "同期"
 msgid "User data dir"
 msgstr "ユーザーデータディレクトリ"
 
+#: src/rimeengine.h:103
+msgid "Data directory manager"
+msgstr "データディレクトリ管理"
+
+#: src/rimeengine.h:90 src/rimeengine.h:95
+msgid "Current"
+msgstr "現在"
+
+#: src/rimeengine.h:91 src/rimeengine.h:96
+msgid "Profiles"
+msgstr "プロファイル"
+
+#: src/rimeengine.h:97
+msgid "Error"
+msgstr "エラー"
+
 #: src/rimeengine.h:111
 msgid "Schema Selector"
 msgstr "スキーマ選択"
+
+#: src/rimeengine.h:154
+msgid "Write librime logs to stderr"
+msgstr ""

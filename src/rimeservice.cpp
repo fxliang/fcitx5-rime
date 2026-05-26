@@ -84,4 +84,47 @@ std::vector<std::string> RimeService::listAllSchemas() {
     return schemas;
 }
 
+std::string RimeService::currentDataDir() { return engine_->currentDataDir(); }
+
+std::vector<std::string> RimeService::listDataDirs() {
+    return engine_->listDataDirs();
+}
+
+bool RimeService::createDataDir(const std::string &name) {
+    std::string error;
+    const bool ok = engine_->createDataDir(name, &error);
+    if (!ok) {
+        RIME_ERROR() << "CreateDataDir failed: " << error;
+    }
+    return ok;
+}
+
+bool RimeService::renameDataDir(const std::string &from,
+                                const std::string &to) {
+    std::string error;
+    const bool ok = engine_->renameDataDir(from, to, &error);
+    if (!ok) {
+        RIME_ERROR() << "RenameDataDir failed: " << error;
+    }
+    return ok;
+}
+
+bool RimeService::deleteDataDir(const std::string &name) {
+    std::string error;
+    const bool ok = engine_->deleteDataDir(name, &error);
+    if (!ok) {
+        RIME_ERROR() << "DeleteDataDir failed: " << error;
+    }
+    return ok;
+}
+
+bool RimeService::switchDataDir(const std::string &name) {
+    std::string error;
+    const bool ok = engine_->switchDataDir(name, /*fullcheck=*/true, &error);
+    if (!ok) {
+        RIME_ERROR() << "SwitchDataDir failed: " << error;
+    }
+    return ok;
+}
+
 } // namespace fcitx::rime

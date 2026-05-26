@@ -57,6 +57,10 @@ msgstr ""
 msgid "Deploy"
 msgstr "Einsetzen"
 
+#: src/rimeengine.h:142
+msgid "Deploy hotkey"
+msgstr "Einsetzen-Hotkey"
+
 #: src/rimeengine.h:63
 msgid "Do not show"
 msgstr ""
@@ -127,9 +131,29 @@ msgstr ""
 msgid "Synchronize"
 msgstr "Synchronisieren"
 
+#: src/rimeengine.h:146
+msgid "Synchronize hotkey"
+msgstr "Synchronisieren-Hotkey"
+
 #: src/rimeengine.h:100
 msgid "User data dir"
 msgstr ""
+
+#: src/rimeengine.h:103
+msgid "Data directory manager"
+msgstr "Datenverzeichnisverwaltung"
+
+#: src/rimeengine.h:90 src/rimeengine.h:95
+msgid "Current"
+msgstr "Aktuell"
+
+#: src/rimeengine.h:91 src/rimeengine.h:96
+msgid "Profiles"
+msgstr "Profile"
+
+#: src/rimeengine.h:97
+msgid "Error"
+msgstr "Fehler"
 
 #: src/rimeengine.h:111
 msgid "Schema Selector"
@@ -145,6 +169,10 @@ msgstr "Fcitx Shift_L-Umschaltung aktivieren"
 #: src/rimeengine.h:78
 msgid "Shift Key Behavior"
 msgstr "Shift-Tasten-Verhalten"
+
+#: src/rimeengine.h:154
+msgid "Write librime logs to stderr"
+msgstr ""
 
 #: src/rimeengine.h:78
 msgid "Auto"

@@ -24,6 +24,10 @@ msgstr ""
 msgid "Action when switching input method"
 msgstr "Hành động khi chuyển đổi kiểu gõ"
 
+#: src/rimeengine.h:154
+msgid "Write librime logs to stderr"
+msgstr ""
+
 #: src/rimeengine.h:58
 msgid "All"
 msgstr "Tất cả"
@@ -55,6 +59,10 @@ msgstr ""
 #: src/rimeengine.h:110 src/rimeengine.cpp:202
 msgid "Deploy"
 msgstr "Triển khai"
+
+#: src/rimeengine.h:142
+msgid "Deploy hotkey"
+msgstr "Phím tắt triển khai"
 
 #: src/rimeengine.h:63
 msgid "Do not show"
@@ -126,6 +134,26 @@ msgstr ""
 msgid "Synchronize"
 msgstr "Đồng bộ hóa"
 
+#: src/rimeengine.h:146
+msgid "Synchronize hotkey"
+msgstr "Phím tắt đồng bộ"
+
 #: src/rimeengine.h:100
 msgid "User data dir"
-msgstr ""
+msgstr "Thư mục dữ liệu người dùng"
+
+#: src/rimeengine.h:103
+msgid "Data directory manager"
+msgstr "Trình quản lý thư mục dữ liệu"
+
+#: src/rimeengine.h:90 src/rimeengine.h:95
+msgid "Current"
+msgstr "Hiện tại"
+
+#: src/rimeengine.h:91 src/rimeengine.h:96
+msgid "Profiles"
+msgstr "Hồ sơ"
+
+#: src/rimeengine.h:97
+msgid "Error"
+msgstr "Lỗi"

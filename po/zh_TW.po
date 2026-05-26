@@ -61,6 +61,14 @@ msgstr "編輯中文本"
 msgid "Deploy"
 msgstr "重新部署"
 
+#: src/rimeengine.h:145
+msgid "Deploy now"
+msgstr "立即重新部署"
+
+#: src/rimeengine.h:142
+msgid "Deploy hotkey"
+msgstr "重新部署快速鍵"
+
 #: src/rimeengine.h:63
 msgid "Do not show"
 msgstr "不顯示"
@@ -100,6 +108,10 @@ msgstr "啟用 Fcitx Shift_L 切換"
 #: src/rimeengine.h:78
 msgid "Shift Key Behavior"
 msgstr "Shift 鍵行為"
+
+#: src/rimeengine.h:154
+msgid "Write librime logs to stderr"
+msgstr "將 librime 日誌輸出到 stderr"
 
 #: src/rimeengine.h:78
 msgid "Auto"
@@ -147,10 +159,34 @@ msgstr "共享輸入狀態"
 msgid "Synchronize"
 msgstr "同步"
 
+#: src/rimeengine.h:148
+msgid "Synchronize now"
+msgstr "立即同步"
+
+#: src/rimeengine.h:146
+msgid "Synchronize hotkey"
+msgstr "同步快速鍵"
+
 #: src/rimeengine.h:100
 msgid "User data dir"
 msgstr "使用者資料夾"
 
+#: src/rimeengine.h:103
+msgid "Data directory manager"
+msgstr "資料目錄管理"
+
 #: src/rimeengine.h:111
 msgid "Schema Selector"
 msgstr "方案選擇"
+
+#: src/rimeengine.h:90 src/rimeengine.h:95
+msgid "Current"
+msgstr "目前"
+
+#: src/rimeengine.h:91 src/rimeengine.h:96
+msgid "Profiles"
+msgstr "目錄列表"
+
+#: src/rimeengine.h:97
+msgid "Error"
+msgstr "錯誤"

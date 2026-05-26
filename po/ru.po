@@ -26,6 +26,10 @@ msgstr ""
 msgid "Action when switching input method"
 msgstr "Действие при переключении метода ввода"
 
+#: src/rimeengine.h:154
+msgid "Write librime logs to stderr"
+msgstr ""
+
 #: src/rimeengine.h:58
 msgid "All"
 msgstr "Все"
@@ -57,6 +61,10 @@ msgstr "Составление текста"
 #: src/rimeengine.h:110 src/rimeengine.cpp:202
 msgid "Deploy"
 msgstr "Развернуть"
+
+#: src/rimeengine.h:142
+msgid "Deploy hotkey"
+msgstr "Горячая клавиша развертывания"
 
 #: src/rimeengine.h:63
 msgid "Do not show"
@@ -131,9 +139,29 @@ msgstr "Общее состояние ввода"
 msgid "Synchronize"
 msgstr "Синхронизировать"
 
+#: src/rimeengine.h:146
+msgid "Synchronize hotkey"
+msgstr "Горячая клавиша синхронизации"
+
 #: src/rimeengine.h:100
 msgid "User data dir"
 msgstr "Каталог пользовательских данных"
+
+#: src/rimeengine.h:103
+msgid "Data directory manager"
+msgstr "Управление каталогами данных"
+
+#: src/rimeengine.h:90 src/rimeengine.h:95
+msgid "Current"
+msgstr "Текущий"
+
+#: src/rimeengine.h:91 src/rimeengine.h:96
+msgid "Profiles"
+msgstr "Профили"
+
+#: src/rimeengine.h:97
+msgid "Error"
+msgstr "Ошибка"
 
 #: src/rimeengine.h:111
 msgid "Schema Selector"

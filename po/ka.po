@@ -23,6 +23,10 @@ msgstr ""
 msgid "Action when switching input method"
 msgstr ""
 
+#: src/rimeengine.h:154
+msgid "Write librime logs to stderr"
+msgstr ""
+
 #: src/rimeengine.h:58
 msgid "All"
 msgstr "ყველა"
@@ -54,6 +58,10 @@ msgstr ""
 #: src/rimeengine.h:110 src/rimeengine.cpp:202
 msgid "Deploy"
 msgstr "განთავსება"
+
+#: src/rimeengine.h:142
+msgid "Deploy hotkey"
+msgstr "Deploy hotkey"
 
 #: src/rimeengine.h:63
 msgid "Do not show"
@@ -125,6 +133,26 @@ msgstr ""
 msgid "Synchronize"
 msgstr "სინქრონიზაცია"
 
+#: src/rimeengine.h:146
+msgid "Synchronize hotkey"
+msgstr "Synchronize hotkey"
+
 #: src/rimeengine.h:100
 msgid "User data dir"
-msgstr ""
+msgstr "მომხმარებლის მონაცემთა დირექტორია"
+
+#: src/rimeengine.h:103
+msgid "Data directory manager"
+msgstr "მონაცემთა დირექტორიის მართვა"
+
+#: src/rimeengine.h:90 src/rimeengine.h:95
+msgid "Current"
+msgstr "მიმდინარე"
+
+#: src/rimeengine.h:91 src/rimeengine.h:96
+msgid "Profiles"
+msgstr "პროფილები"
+
+#: src/rimeengine.h:97
+msgid "Error"
+msgstr "შეცდომა"

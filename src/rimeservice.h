@@ -24,6 +24,12 @@ public:
     void setSchema(const std::string &schema);
     std::string currentSchema();
     std::vector<std::string> listAllSchemas();
+    std::string currentDataDir();
+    std::vector<std::string> listDataDirs();
+    bool createDataDir(const std::string &name);
+    bool renameDataDir(const std::string &from, const std::string &to);
+    bool deleteDataDir(const std::string &name);
+    bool switchDataDir(const std::string &name);
 
 private:
     RimeState *currentState();
@@ -32,6 +38,12 @@ private:
     FCITX_OBJECT_VTABLE_METHOD(setSchema, "SetSchema", "s", "");
     FCITX_OBJECT_VTABLE_METHOD(currentSchema, "GetCurrentSchema", "", "s");
     FCITX_OBJECT_VTABLE_METHOD(listAllSchemas, "ListAllSchemas", "", "as");
+    FCITX_OBJECT_VTABLE_METHOD(currentDataDir, "GetCurrentDataDir", "", "s");
+    FCITX_OBJECT_VTABLE_METHOD(listDataDirs, "ListDataDirs", "", "as");
+    FCITX_OBJECT_VTABLE_METHOD(createDataDir, "CreateDataDir", "s", "b");
+    FCITX_OBJECT_VTABLE_METHOD(renameDataDir, "RenameDataDir", "ss", "b");
+    FCITX_OBJECT_VTABLE_METHOD(deleteDataDir, "DeleteDataDir", "s", "b");
+    FCITX_OBJECT_VTABLE_METHOD(switchDataDir, "SwitchDataDir", "s", "b");
 
     RimeEngine *engine_;
 };

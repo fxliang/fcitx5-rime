@@ -24,6 +24,10 @@ msgstr ""
 msgid "Action when switching input method"
 msgstr "Action lors d'un changement de méthode de saisie"
 
+#: src/rimeengine.h:154
+msgid "Write librime logs to stderr"
+msgstr ""
+
 #: src/rimeengine.h:58
 msgid "All"
 msgstr "Tout"
@@ -55,6 +59,10 @@ msgstr "Composer du texte"
 #: src/rimeengine.h:110 src/rimeengine.cpp:202
 msgid "Deploy"
 msgstr "Déployer"
+
+#: src/rimeengine.h:142
+msgid "Deploy hotkey"
+msgstr "Raccourci de déploiement"
 
 #: src/rimeengine.h:63
 msgid "Do not show"
@@ -128,6 +136,26 @@ msgstr "État de saisie partagé"
 msgid "Synchronize"
 msgstr "Synchroniser"
 
+#: src/rimeengine.h:146
+msgid "Synchronize hotkey"
+msgstr "Raccourci de synchronisation"
+
 #: src/rimeengine.h:100
 msgid "User data dir"
 msgstr "Dossier des données utilisateur"
+
+#: src/rimeengine.h:103
+msgid "Data directory manager"
+msgstr "Gestion du répertoire de données"
+
+#: src/rimeengine.h:90 src/rimeengine.h:95
+msgid "Current"
+msgstr "Actuel"
+
+#: src/rimeengine.h:91 src/rimeengine.h:96
+msgid "Profiles"
+msgstr "Profils"
+
+#: src/rimeengine.h:97
+msgid "Error"
+msgstr "Erreur"

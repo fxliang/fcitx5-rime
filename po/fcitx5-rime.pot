@@ -51,6 +51,14 @@ msgstr ""
 msgid "Deploy"
 msgstr ""
 
+#: src/rimeengine.h:145
+msgid "Deploy now"
+msgstr ""
+
+#: src/rimeengine.h:142
+msgid "Deploy hotkey"
+msgstr ""
+
 #: src/rimeengine.h:63
 msgid "Do not show"
 msgstr ""
@@ -89,6 +97,10 @@ msgstr ""
 
 #: src/rimeengine.h:78
 msgid "Shift Key Behavior"
+msgstr ""
+
+#: src/rimeengine.h:154
+msgid "Write librime logs to stderr"
 msgstr ""
 
 #: src/rimeengine.h:78
@@ -137,10 +149,34 @@ msgstr ""
 msgid "Synchronize"
 msgstr ""
 
+#: src/rimeengine.h:148
+msgid "Synchronize now"
+msgstr ""
+
+#: src/rimeengine.h:146
+msgid "Synchronize hotkey"
+msgstr ""
+
 #: src/rimeengine.h:100
 msgid "User data dir"
 msgstr ""
 
+#: src/rimeengine.h:103
+msgid "Data directory manager"
+msgstr ""
+
 #: src/rimeengine.h:111
 msgid "Schema Selector"
+msgstr ""
+
+#: src/rimeengine.h:90 src/rimeengine.h:95
+msgid "Current"
+msgstr ""
+
+#: src/rimeengine.h:91 src/rimeengine.h:96
+msgid "Profiles"
+msgstr ""
+
+#: src/rimeengine.h:97
+msgid "Error"
 msgstr ""

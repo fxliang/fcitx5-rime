@@ -24,6 +24,10 @@ msgstr ""
 msgid "Action when switching input method"
 msgstr ""
 
+#: src/rimeengine.h:154
+msgid "Write librime logs to stderr"
+msgstr ""
+
 #: src/rimeengine.h:58
 msgid "All"
 msgstr ""
@@ -55,6 +59,10 @@ msgstr ""
 #: src/rimeengine.h:110 src/rimeengine.cpp:202
 msgid "Deploy"
 msgstr "Desplega"
+
+#: src/rimeengine.h:142
+msgid "Deploy hotkey"
+msgstr "Drecera de desplegament"
 
 #: src/rimeengine.h:63
 msgid "Do not show"
@@ -126,6 +134,26 @@ msgstr ""
 msgid "Synchronize"
 msgstr "Sincronitza"
 
+#: src/rimeengine.h:146
+msgid "Synchronize hotkey"
+msgstr "Drecera de sincronització"
+
 #: src/rimeengine.h:100
 msgid "User data dir"
-msgstr ""
+msgstr "Directori de dades d'usuari"
+
+#: src/rimeengine.h:103
+msgid "Data directory manager"
+msgstr "Gestor del directori de dades"
+
+#: src/rimeengine.h:90 src/rimeengine.h:95
+msgid "Current"
+msgstr "Actual"
+
+#: src/rimeengine.h:91 src/rimeengine.h:96
+msgid "Profiles"
+msgstr "Perfils"
+
+#: src/rimeengine.h:97
+msgid "Error"
+msgstr "Error"

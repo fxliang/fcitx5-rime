@@ -8,6 +8,8 @@
 #include "notifications_public.h"
 #include "rimeaction.h"
 #include "rimestate.h"
+#include <algorithm>
+#include <cctype>
 #include <cstdint>
 #include <cstring>
 #include <ctime>
@@ -37,6 +39,7 @@
 #include <fcitx/statusarea.h>
 #include <fcitx/userinterface.h>
 #include <fcitx/userinterfacemanager.h>
+#include <filesystem>
 #include <list>
 #include <memory>
 #include <rime_api.h>
@@ -168,6 +171,92 @@ rime_api_t *EnsureRimeApi() {
     return api;
 }
 
+std::string trimAscii(std::string value) {
+    auto isSpace = [](char ch) {
+        return ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r';
+    };
+    while (!value.empty() && isSpace(value.front())) {
+        value.erase(value.begin());
+    }
+    while (!value.empty() && isSpace(value.back())) {
+        value.pop_back();
+    }
+    return value;
+}
+
+std::vector<std::string> splitLines(const std::string &text) {
+    std::vector<std::string> lines;
+    std::istringstream in(text);
+    std::string line;
+    while (std::getline(in, line)) {
+        auto trimmed = trimAscii(line);
+        if (!trimmed.empty()) {
+            lines.emplace_back(std::move(trimmed));
+        }
+    }
+    return lines;
+}
+
+std::string joinLines(const std::vector<std::string> &lines) {
+    std::ostringstream out;
+    for (size_t i = 0; i < lines.size(); i++) {
+        out << lines[i];
+        if (i + 1 < lines.size()) {
+            out << '\n';
+        }
+    }
+    return out.str();
+}
+
+std::string normalizeProtocolKey(std::string_view value) {
+    std::string key;
+    key.reserve(value.size());
+    for (const unsigned char ch : value) {
+        if (ch == '_' || ch == '-' || ch == '/' || ch == ' ') {
+            continue;
+        }
+        key.push_back(std::tolower(ch));
+    }
+    return key;
+}
+
+bool isDeployPath(std::string_view path) {
+    const auto key = normalizeProtocolKey(path);
+    return key == "deploy";
+}
+
+bool isSyncPath(std::string_view path) {
+    const auto key = normalizeProtocolKey(path);
+    return key == "sync" || key == "synchronize";
+}
+
+bool isProfileManagerPath(std::string_view path) {
+    const auto key = normalizeProtocolKey(path);
+    return key == "profilemanager" || key == "datadirmanager";
+}
+
+bool isSchemaSelectorPath(std::string_view path) {
+    const auto key = normalizeProtocolKey(path);
+    return key == "schemaselector";
+}
+
+std::string normalizeProfileAction(std::string_view action) {
+    const auto key = normalizeProtocolKey(action);
+    if (key == "create" || key == "add") {
+        return "create";
+    }
+    if (key == "rename") {
+        return "rename";
+    }
+    if (key == "delete" || key == "remove") {
+        return "delete";
+    }
+    if (key == "switch" || key == "setcurrent" || key == "activate") {
+        return "switch";
+    }
+    return std::string(action);
+}
+
 } // namespace
 
 class IMAction : public Action {
@@ -292,6 +381,7 @@ RimeEngine::RimeEngine(Instance *instance)
         EventType::GlobalConfigReloaded, EventWatcherPhase::Default,
         [this](Event &) { refreshSessionPoolPolicy(); });
 
+    loadDataDirState();
     allowNotification("failure");
     reloadConfig();
     constructed_ = true;
@@ -300,6 +390,7 @@ RimeEngine::RimeEngine(Instance *instance)
 RimeEngine::~RimeEngine() {
     factory_.unregister();
     try {
+        RIME_INFO() << "RimeEngine dtor: finalize()";
         api_->finalize();
     } catch (const std::exception &e) {
         RIME_ERROR() << e.what();
@@ -307,11 +398,12 @@ RimeEngine::~RimeEngine() {
 }
 
 void RimeEngine::rimeStart(bool fullcheck) {
-    RIME_DEBUG() << "Rime Start (fullcheck: " << fullcheck << ")";
+    RIME_INFO() << "Rime Start: fullcheck=" << fullcheck
+                << ", currentDataDir=" << currentDataDir_;
 
     auto userDir =
         StandardPaths::global().userDirectory(StandardPathsType::PkgData) /
-        "rime";
+        currentDataDir_;
     RIME_DEBUG() << "Rime data directory: " << userDir;
     if (!fs::makePath(userDir)) {
         if (!fs::isdir(userDir)) {
@@ -326,9 +418,22 @@ void RimeEngine::rimeStart(bool fullcheck) {
     fcitx_rime_traits.distribution_name = "Rime";
     fcitx_rime_traits.distribution_code_name = "fcitx-rime";
     fcitx_rime_traits.distribution_version = FCITX_RIME_VERSION;
-    // make librime only log to stderr
-    // https://github.com/rime/librime/commit/6d1b9b65de4e7784a68a17d10a3e5c900e4fd511
-    fcitx_rime_traits.log_dir = "";
+    std::string logDir;
+    if (*config_.logToStderr) {
+        // Empty log_dir tells librime to print logs to stderr.
+        fcitx_rime_traits.log_dir = "";
+    } else {
+        auto logDirPath = userDir / "log";
+        if (!fs::makePath(logDirPath) && !fs::isdir(logDirPath)) {
+            RIME_ERROR() << "Failed to create rime log directory: "
+                         << logDirPath << ", falling back to stderr.";
+            fcitx_rime_traits.log_dir = "";
+        } else {
+            logDir = logDirPath.string();
+            fcitx_rime_traits.log_dir = logDir.c_str();
+            RIME_DEBUG() << "Rime log directory: " << logDirPath;
+        }
+    }
     switch (rime_log().logLevel()) {
     case NoLog:
         fcitx_rime_traits.min_log_level = 4;
@@ -351,12 +456,16 @@ void RimeEngine::rimeStart(bool fullcheck) {
     fcitx_rime_traits.modules = nullptr;
 
     if (firstRun_) {
+        RIME_INFO() << "Rime Start: firstRun setup()";
         api_->setup(&fcitx_rime_traits);
         firstRun_ = false;
     }
+    RIME_INFO() << "Rime Start: initialize()";
     api_->initialize(&fcitx_rime_traits);
     api_->set_notification_handler(&rimeNotificationHandler, this);
     api_->start_maintenance(fullcheck);
+    RIME_INFO() << "Rime Start: maintenanceMode="
+                << api_->is_maintenance_mode();
 
     if (!api_->is_maintenance_mode()) {
         updateAppOptions();
@@ -377,17 +486,49 @@ void RimeEngine::updateAppOptions() {
 }
 
 void RimeEngine::reloadConfig() {
+    RIME_INFO() << "Rime reloadConfig()";
     readAsIni(config_, "conf/rime.conf");
     updateConfig();
 }
 
 void RimeEngine::setSubConfig(const std::string &path,
                               const RawConfig &config) {
-    if (path == "deploy") {
+    if (isDeployPath(path)) {
         deploy();
-    } else if (path == "sync") {
+    } else if (isSyncPath(path)) {
         sync(/*userTriggered=*/true);
-    } else if (path == "schema-selector") {
+    } else if (isProfileManagerPath(path)) {
+        const auto actionCfg = config.get("Action");
+        if (!actionCfg) {
+            dataDirLastError_ = "Missing Action field.";
+            return;
+        }
+        const auto action = normalizeProfileAction(actionCfg->value());
+        const std::string name =
+            config.get("Name") ? config.get("Name")->value() : "";
+        const std::string newName =
+            config.get("NewName") ? config.get("NewName")->value() : "";
+        std::string error;
+        bool ok = false;
+        if (action == "create") {
+            ok = createDataDir(name, &error);
+        } else if (action == "rename") {
+            ok = renameDataDir(name, newName, &error);
+        } else if (action == "delete") {
+            ok = deleteDataDir(name, &error);
+        } else if (action == "switch") {
+            ok = switchDataDir(name, /*fullcheck=*/true, &error);
+        } else {
+            error = "Unknown action: " + action;
+        }
+        if (!ok) {
+            dataDirLastError_ = error;
+            RIME_ERROR() << "Data directory operation failed: action=" << action
+                         << ", error=" << error;
+        } else {
+            dataDirLastError_.clear();
+        }
+    } else if (isSchemaSelectorPath(path)) {
         std::vector<std::pair<bool, std::pair<std::string, std::string>>> rows;
         if (const auto itemsConfig = config.get("Items");
             !itemsConfig ||
@@ -430,10 +571,10 @@ void RimeEngine::setSubConfig(const std::string &path,
         }
         auto *customSettings = reinterpret_cast<RimeCustomSettings *>(settings);
         if (!leversApi->load_settings(customSettings)) {
-            leversApi->custom_settings_destroy(customSettings);
-            RIME_ERROR() << "Schema selector update ignored: failed to load "
-                            "switcher settings.";
-            return;
+            // Some fresh Android profiles may not have switcher settings yet.
+            // Continue so select_schemas/save_settings can create them.
+            RIME_ERROR() << "Schema selector update: load_settings returned "
+                            "false, continue with defaults.";
         }
         std::vector<const char *> schemaIds;
         schemaIds.reserve(selected.size());
@@ -462,7 +603,14 @@ void RimeEngine::setSubConfig(const std::string &path,
 }
 
 const Configuration *RimeEngine::getSubConfig(const std::string &path) const {
-    if (path != "schema-selector") {
+    if (isProfileManagerPath(path)) {
+        dataDirManagerConfig_.current.setValue(currentDataDir_);
+        dataDirManagerConfig_.profiles.setValue(joinLines(dataDirs_));
+        dataDirManagerConfig_.error.setValue(dataDirLastError_);
+        return &dataDirManagerConfig_;
+    }
+
+    if (!isSchemaSelectorPath(path)) {
         return nullptr;
     }
     auto *module = api_->find_module("levers");
@@ -487,10 +635,10 @@ const Configuration *RimeEngine::getSubConfig(const std::string &path) const {
     }
     auto *customSettings = reinterpret_cast<RimeCustomSettings *>(settings);
     if (!leversApi->load_settings(customSettings)) {
-        leversApi->custom_settings_destroy(customSettings);
-        RIME_ERROR() << "Schema selector getSubConfig failed: load_settings "
-                        "returned false.";
-        return nullptr;
+        // Fresh profiles may not have switcher settings generated yet.
+        // Continue and let API return whatever is currently available.
+        RIME_ERROR() << "Schema selector getSubConfig: load_settings returned "
+                        "false, continue with defaults.";
     }
 
     RimeSchemaList available{};
@@ -536,17 +684,26 @@ const Configuration *RimeEngine::getSubConfig(const std::string &path) const {
 }
 
 void RimeEngine::updateConfig() {
-    RIME_DEBUG() << "Rime UpdateConfig";
+    RIME_INFO() << "Rime updateConfig(): restartRime(fullcheck=false)";
+    restartRime(false);
+}
+
+void RimeEngine::restartRime(bool fullcheck) {
+    RIME_INFO() << "Rime restartRime(): begin, fullcheck=" << fullcheck
+                << ", constructed=" << constructed_
+                << ", factoryRegistered=" << factory_.registered();
     if (constructed_ && factory_.registered()) {
         releaseAllSession(true);
     }
     try {
+        RIME_INFO() << "Rime restartRime(): finalize()";
         api_->finalize();
     } catch (const std::exception &e) {
         RIME_ERROR() << e.what();
     }
 
-    rimeStart(false);
+    rimeStart(fullcheck);
+    RIME_INFO() << "Rime restartRime(): re-register input context property";
     instance_->inputContextManager().registerProperty("rimeState", &factory_);
     updateSchemaMenu();
     refreshSessionPoolPolicy();
@@ -557,6 +714,7 @@ void RimeEngine::updateConfig() {
     if (constructed_) {
         refreshStatusArea(0);
     }
+    RIME_INFO() << "Rime restartRime(): end";
 }
 
 void RimeEngine::refreshStatusArea(InputContext &ic) {
@@ -830,11 +988,9 @@ void RimeEngine::releaseAllSession(bool snapshot) {
 }
 
 void RimeEngine::deploy() {
-    RIME_DEBUG() << "Rime Deploy";
-    releaseAllSession(true);
-    api_->finalize();
+    RIME_INFO() << "Rime deploy(): restartRime(fullcheck=true)";
     allowNotification();
-    rimeStart(true);
+    restartRime(true);
 }
 
 void RimeEngine::sync(bool userTriggered) {
@@ -929,6 +1085,237 @@ void RimeEngine::refreshSessionPoolPolicy() {
         releaseAllSession(constructed_);
         sessionPool_.setPropertyPropagatePolicy(newPolicy);
     }
+}
+
+std::string RimeEngine::dataRootDir() const {
+    return StandardPaths::global()
+        .userDirectory(StandardPathsType::PkgData)
+        .string();
+}
+
+void RimeEngine::loadDataDirState() {
+    readAsIni(dataDirStateConfig_, "conf/rime-data-dir.conf");
+
+    dataDirs_.clear();
+    const auto parsed = splitLines(*dataDirStateConfig_.profiles);
+    for (const auto &name : parsed) {
+        if (std::find(dataDirs_.begin(), dataDirs_.end(), name) ==
+            dataDirs_.end()) {
+            dataDirs_.push_back(name);
+        }
+    }
+    if (dataDirs_.empty()) {
+        dataDirs_.push_back("rime");
+    }
+
+    auto current = trimAscii(*dataDirStateConfig_.current);
+    if (current.empty()) {
+        current = "rime";
+    }
+    if (std::find(dataDirs_.begin(), dataDirs_.end(), current) ==
+        dataDirs_.end()) {
+        dataDirs_.push_back(current);
+    }
+    currentDataDir_ = std::move(current);
+
+    std::string ignored;
+    ensureDataDirExists(currentDataDir_, &ignored);
+    saveDataDirState();
+}
+
+void RimeEngine::saveDataDirState() {
+    dataDirStateConfig_.current.setValue(currentDataDir_);
+    dataDirStateConfig_.profiles.setValue(joinLines(dataDirs_));
+    safeSaveAsIni(dataDirStateConfig_, "conf/rime-data-dir.conf");
+}
+
+bool RimeEngine::validateDataDirName(const std::string &name,
+                                     std::string *error) const {
+    if (name.empty()) {
+        if (error) {
+            *error = "Directory name must not be empty.";
+        }
+        return false;
+    }
+    if (name.size() > 64) {
+        if (error) {
+            *error = "Directory name is too long (max 64).";
+        }
+        return false;
+    }
+    if (name == "." || name == "..") {
+        if (error) {
+            *error = "Invalid directory name.";
+        }
+        return false;
+    }
+    if (name.find('/') != std::string::npos ||
+        name.find('\\') != std::string::npos) {
+        if (error) {
+            *error = "Directory name must not contain path separators.";
+        }
+        return false;
+    }
+    for (const unsigned char ch : name) {
+        if (ch < 0x20 || ch == 0x7f) {
+            if (error) {
+                *error = "Directory name contains invalid control characters.";
+            }
+            return false;
+        }
+    }
+    return true;
+}
+
+bool RimeEngine::ensureDataDirExists(const std::string &name,
+                                     std::string *error) const {
+    if (!validateDataDirName(name, error)) {
+        return false;
+    }
+    const auto dir = std::filesystem::path(dataRootDir()) / name;
+    std::error_code ec;
+    std::filesystem::create_directories(dir, ec);
+    if (ec) {
+        if (error) {
+            *error = "Failed to create directory: " + dir.string();
+        }
+        return false;
+    }
+    return true;
+}
+
+std::vector<std::string> RimeEngine::listDataDirs() const { return dataDirs_; }
+
+bool RimeEngine::createDataDir(const std::string &name, std::string *error) {
+    if (!validateDataDirName(name, error)) {
+        return false;
+    }
+    if (std::find(dataDirs_.begin(), dataDirs_.end(), name) !=
+        dataDirs_.end()) {
+        if (error) {
+            *error = "Directory already exists.";
+        }
+        return false;
+    }
+    if (!ensureDataDirExists(name, error)) {
+        return false;
+    }
+    dataDirs_.push_back(name);
+    saveDataDirState();
+    return true;
+}
+
+bool RimeEngine::renameDataDir(const std::string &from, const std::string &to,
+                               std::string *error) {
+    if (!validateDataDirName(from, error) || !validateDataDirName(to, error)) {
+        return false;
+    }
+    auto fromIter = std::find(dataDirs_.begin(), dataDirs_.end(), from);
+    if (fromIter == dataDirs_.end()) {
+        if (error) {
+            *error = "Source directory does not exist.";
+        }
+        return false;
+    }
+    if (std::find(dataDirs_.begin(), dataDirs_.end(), to) != dataDirs_.end()) {
+        if (error) {
+            *error = "Target directory already exists.";
+        }
+        return false;
+    }
+
+    const auto root = std::filesystem::path(dataRootDir());
+    const auto fromPath = root / from;
+    const auto toPath = root / to;
+    std::error_code ec;
+    if (std::filesystem::exists(fromPath, ec)) {
+        ec.clear();
+        std::filesystem::rename(fromPath, toPath, ec);
+        if (ec) {
+            if (error) {
+                *error = "Failed to rename directory.";
+            }
+            return false;
+        }
+    }
+
+    *fromIter = to;
+    const bool renamedCurrent = currentDataDir_ == from;
+    if (renamedCurrent) {
+        currentDataDir_ = to;
+    }
+    saveDataDirState();
+
+    if (renamedCurrent) {
+        restartRime(true);
+    }
+    return true;
+}
+
+bool RimeEngine::deleteDataDir(const std::string &name, std::string *error) {
+    if (!validateDataDirName(name, error)) {
+        return false;
+    }
+    auto iter = std::find(dataDirs_.begin(), dataDirs_.end(), name);
+    if (iter == dataDirs_.end()) {
+        if (error) {
+            *error = "Directory does not exist.";
+        }
+        return false;
+    }
+    if (dataDirs_.size() <= 1) {
+        if (error) {
+            *error = "At least one data directory must remain.";
+        }
+        return false;
+    }
+    if (name == currentDataDir_) {
+        if (error) {
+            *error = "Cannot delete current directory. Please switch first.";
+        }
+        return false;
+    }
+
+    const auto dir = std::filesystem::path(dataRootDir()) / name;
+    std::error_code ec;
+    std::filesystem::remove_all(dir, ec);
+    if (ec) {
+        if (error) {
+            *error = "Failed to delete directory.";
+        }
+        return false;
+    }
+    dataDirs_.erase(iter);
+    if (dataDirs_.empty()) {
+        dataDirs_.push_back("rime");
+    }
+    saveDataDirState();
+    return true;
+}
+
+bool RimeEngine::switchDataDir(const std::string &name, bool fullcheck,
+                               std::string *error) {
+    if (!validateDataDirName(name, error)) {
+        return false;
+    }
+    if (std::find(dataDirs_.begin(), dataDirs_.end(), name) ==
+        dataDirs_.end()) {
+        if (error) {
+            *error = "Directory does not exist.";
+        }
+        return false;
+    }
+    if (!ensureDataDirExists(name, error)) {
+        return false;
+    }
+    if (name == currentDataDir_) {
+        return true;
+    }
+    currentDataDir_ = name;
+    saveDataDirState();
+    allowNotification();
+    restartRime(fullcheck);
+    return true;
 }
 
 PropertyPropagatePolicy RimeEngine::getSharedStatePolicy() {
