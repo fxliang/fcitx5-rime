@@ -106,10 +106,6 @@ msgstr "启用 Fcitx Shift_L 切换"
 msgid "Shift Key Behavior"
 msgstr "Shift 键行为"
 
-#: src/rimeengine.h:154
-msgid "Write librime logs to stderr"
-msgstr "将 librime 日志输出到 stderr"
-
 #: src/rimeengine.h:78
 msgid "Auto"
 msgstr "自动"

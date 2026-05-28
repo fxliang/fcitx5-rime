@@ -152,9 +152,7 @@ FCITX_CONFIGURATION(
         "fcitx://addon-action/addon/rime/sync?app_proto=2"};
     OptionWithAnnotation<ShiftKeyBehavior, ShiftKeyBehaviorI18NAnnotation>
         shiftKeyBehavior{this, "ShiftKeyBehavior", _("Shift Key Behavior"),
-                         ShiftKeyBehavior::DisableFcitxToggle};
-    Option<bool> logToStderr{this, "LogToStderr",
-                             _("Write librime logs to stderr"), true};);
+                         ShiftKeyBehavior::DisableFcitxToggle};);
 
 class RimeEngine final : public InputMethodEngineV4Point1 {
 public:

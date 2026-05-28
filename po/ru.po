@@ -26,10 +26,6 @@ msgstr ""
 msgid "Action when switching input method"
 msgstr "Действие при переключении метода ввода"
 
-#: src/rimeengine.h:154
-msgid "Write librime logs to stderr"
-msgstr ""
-
 #: src/rimeengine.h:58
 msgid "All"
 msgstr "Все"

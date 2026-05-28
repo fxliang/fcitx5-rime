@@ -99,10 +99,6 @@ msgstr ""
 msgid "Shift Key Behavior"
 msgstr ""
 
-#: src/rimeengine.h:154
-msgid "Write librime logs to stderr"
-msgstr ""
-
 #: src/rimeengine.h:78
 msgid "Auto"
 msgstr ""

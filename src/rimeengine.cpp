@@ -418,22 +418,8 @@ void RimeEngine::rimeStart(bool fullcheck) {
     fcitx_rime_traits.distribution_name = "Rime";
     fcitx_rime_traits.distribution_code_name = "fcitx-rime";
     fcitx_rime_traits.distribution_version = FCITX_RIME_VERSION;
-    std::string logDir;
-    if (*config_.logToStderr) {
-        // Empty log_dir tells librime to print logs to stderr.
-        fcitx_rime_traits.log_dir = "";
-    } else {
-        auto logDirPath = userDir / "log";
-        if (!fs::makePath(logDirPath) && !fs::isdir(logDirPath)) {
-            RIME_ERROR() << "Failed to create rime log directory: "
-                         << logDirPath << ", falling back to stderr.";
-            fcitx_rime_traits.log_dir = "";
-        } else {
-            logDir = logDirPath.string();
-            fcitx_rime_traits.log_dir = logDir.c_str();
-            RIME_DEBUG() << "Rime log directory: " << logDirPath;
-        }
-    }
+    // Empty log_dir tells librime to print logs to stderr.
+    fcitx_rime_traits.log_dir = "";
     switch (rime_log().logLevel()) {
     case NoLog:
         fcitx_rime_traits.min_log_level = 4;

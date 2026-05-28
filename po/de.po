@@ -170,10 +170,6 @@ msgstr "Fcitx Shift_L-Umschaltung aktivieren"
 msgid "Shift Key Behavior"
 msgstr "Shift-Tasten-Verhalten"
 
-#: src/rimeengine.h:154
-msgid "Write librime logs to stderr"
-msgstr ""
-
 #: src/rimeengine.h:78
 msgid "Auto"
 msgstr "Automatisch"

@@ -24,10 +24,6 @@ msgstr ""
 msgid "Action when switching input method"
 msgstr "Hành động khi chuyển đổi kiểu gõ"
 
-#: src/rimeengine.h:154
-msgid "Write librime logs to stderr"
-msgstr ""
-
 #: src/rimeengine.h:58
 msgid "All"
 msgstr "Tất cả"
