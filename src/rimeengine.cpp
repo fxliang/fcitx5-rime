@@ -1085,8 +1085,10 @@ void RimeEngine::loadDataDirState() {
     dataDirs_.clear();
     const auto parsed = splitLines(*dataDirStateConfig_.profiles);
     for (const auto &name : parsed) {
-        if (std::find(dataDirs_.begin(), dataDirs_.end(), name) ==
-            dataDirs_.end()) {
+        std::string ignored;
+        if (validateDataDirName(name, &ignored) &&
+            std::find(dataDirs_.begin(), dataDirs_.end(), name) ==
+                dataDirs_.end()) {
             dataDirs_.push_back(name);
         }
     }
@@ -1098,13 +1100,16 @@ void RimeEngine::loadDataDirState() {
     if (current.empty()) {
         current = "rime";
     }
+    std::string ignored;
+    if (!validateDataDirName(current, &ignored)) {
+        current = "rime";
+    }
     if (std::find(dataDirs_.begin(), dataDirs_.end(), current) ==
         dataDirs_.end()) {
         dataDirs_.push_back(current);
     }
     currentDataDir_ = std::move(current);
 
-    std::string ignored;
     ensureDataDirExists(currentDataDir_, &ignored);
     saveDataDirState();
 }
