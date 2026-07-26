@@ -429,12 +429,14 @@ void RimeEngine::rimeStart(bool fullcheck) {
         break;
     case Error:
     case Warn:
-    case Info:
         fcitx_rime_traits.min_log_level = 2;
+        break;
+    case Info:
+        // Rime info is too noisy.
+        fcitx_rime_traits.min_log_level = 3;
         break;
     case Debug:
     default:
-        // Rime info is too noisy.
         fcitx_rime_traits.min_log_level = 0;
         break;
     }

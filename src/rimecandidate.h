@@ -45,7 +45,8 @@ private:
 class RimeCandidateList final : public CandidateList,
                                 public ActionableCandidateList,
                                 public PageableCandidateList,
-                                public BulkCandidateList
+                                public BulkCandidateList,
+                                public TabbedCandidateList
 #ifndef FCITX_RIME_NO_HIGHLIGHT_CANDIDATE
     ,
                                 public BulkCursorCandidateList
@@ -95,6 +96,9 @@ public:
     void setGlobalCursorIndex(int index) override;
 #endif
 
+    std::span<const CandidateAction> tabActions() override;
+    void triggerTabAction(int id) override;
+
     bool hasAction(const CandidateWord &candidate) const override;
     std::vector<CandidateAction>
     candidateActions(const CandidateWord &candidate) const override;
@@ -120,6 +124,11 @@ private:
     mutable size_t maxSize_ = std::numeric_limits<size_t>::max();
     mutable std::vector<std::unique_ptr<RimeGlobalCandidateWord>>
         globalCandidateWords_;
+
+    static constexpr int TAB_ACTION_CLEAR = -1;
+    std::vector<std::string> tabLabels_;
+    std::vector<size_t> tabSpans_;
+    std::vector<CandidateAction> tabActions_;
 };
 } // namespace fcitx::rime
 

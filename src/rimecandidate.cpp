@@ -65,6 +65,7 @@ RimeCandidateList::RimeCandidateList(RimeEngine *engine, InputContext *ic,
     setPageable(this);
     setBulk(this);
     setActionable(this);
+    setTabbed(this);
 #ifndef FCITX_RIME_NO_HIGHLIGHT_CANDIDATE
     setBulkCursor(this);
 #endif
@@ -189,4 +190,73 @@ void RimeCandidateList::setGlobalCursorIndex(int index) {
     api->highlight_candidate(session, index);
 }
 #endif
+
+std::span<const CandidateAction> RimeCandidateList::tabActions() {
+    tabActions_.clear();
+    tabLabels_.clear();
+    tabSpans_.clear();
+
+    auto *state = engine_->state(ic_);
+    if (!state) {
+        return {};
+    }
+    auto session = state->session(false);
+    if (!session) {
+        return {};
+    }
+    auto *api = engine_->api();
+    if (!RIME_API_AVAILABLE(api, get_input_tabs)) {
+        return {};
+    }
+
+    char **labels = nullptr;
+    size_t *spans = nullptr;
+    int *sources = nullptr;
+    size_t count = 0;
+
+    if (!api->get_input_tabs(session, 0, &labels, &spans, &sources, &count) ||
+        count == 0) {
+        return {};
+    }
+
+    for (size_t i = 0; i < count; i++) {
+        tabLabels_.push_back(labels[i]);
+        tabSpans_.push_back(spans[i]);
+    }
+
+    api->free_input_tabs(labels, spans, sources, count);
+
+    for (size_t i = 0; i < count; i++) {
+        CandidateAction action;
+        action.setId(static_cast<int>(i));
+        action.setText(tabLabels_[i]);
+        action.setCheckable(true);
+        action.setChecked(false);
+        tabActions_.push_back(std::move(action));
+    }
+
+    CandidateAction separator;
+    separator.setId(-2);
+    separator.setSeparator(true);
+    tabActions_.push_back(std::move(separator));
+
+    CandidateAction clearAction;
+    clearAction.setId(TAB_ACTION_CLEAR);
+    clearAction.setText("清除");
+    tabActions_.push_back(std::move(clearAction));
+
+    return tabActions_;
+}
+
+void RimeCandidateList::triggerTabAction(int id) {
+    auto *state = engine_->state(ic_);
+    if (!state) {
+        return;
+    }
+    if (id == TAB_ACTION_CLEAR) {
+        state->clearTabs();
+    } else {
+        state->selectTab(id, tabLabels_, tabSpans_);
+    }
+}
 } // namespace fcitx::rime

@@ -407,7 +407,7 @@ void RimeState::updateUI(InputContext *ic, bool keyRelease) {
 
         updatePreedit(ic, context);
 
-        if (context.menu.num_candidates) {
+        if (context.menu.num_candidates || context.composition.length > 0) {
             ic->inputPanel().setCandidateList(
                 std::make_unique<RimeCandidateList>(engine_, ic, context));
         } else {
@@ -617,5 +617,41 @@ void RimeState::showChangedOptions() {
     if (!labels.empty()) {
         engine_->instance()->showCustomInputMethodInformation(&ic_, labels);
     }
+}
+
+void RimeState::selectTab(int tabId, const std::vector<std::string> &labels,
+                          const std::vector<size_t> &spans) {
+    auto *api = engine_->api();
+    if (api->is_maintenance_mode()) {
+        return;
+    }
+    auto session = this->session(false);
+    if (!session) {
+        return;
+    }
+    if (!RIME_API_AVAILABLE(api, select_tab)) {
+        return;
+    }
+    if (tabId < 0 || tabId >= static_cast<int>(labels.size())) {
+        return;
+    }
+    api->select_tab(session, 0, labels[tabId].c_str(), spans[tabId]);
+    updateUI(&ic_, false);
+}
+
+void RimeState::clearTabs() {
+    auto *api = engine_->api();
+    if (api->is_maintenance_mode()) {
+        return;
+    }
+    auto session = this->session(false);
+    if (!session) {
+        return;
+    }
+    if (!RIME_API_AVAILABLE(api, clear_tabs)) {
+        return;
+    }
+    api->clear_tabs(session);
+    updateUI(&ic_, false);
 }
 } // namespace fcitx::rime

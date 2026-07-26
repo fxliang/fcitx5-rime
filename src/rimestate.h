@@ -56,6 +56,9 @@ public:
     std::string currentSchema();
     void addChangedOption(std::string_view option);
     void showChangedOptions();
+    void selectTab(int tabId, const std::vector<std::string> &labels,
+                   const std::vector<size_t> &spans);
+    void clearTabs();
 
 private:
     void maybeSyncProgramNameToSession();
