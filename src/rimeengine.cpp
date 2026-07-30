@@ -957,6 +957,10 @@ std::string RimeEngine::subModeIconImpl(const InputMethodEntry & /*unused*/,
                 result = "fcitx_rime_latin";
             } else {
                 result = "fcitx-rime";
+                if (status.schema_id) {
+                    result += ":";
+                    result += status.schema_id;
+                }
             }
         });
     }
@@ -1052,6 +1056,7 @@ void RimeEngine::updateSchemaMenu() {
             std::string schemaId = list.list[i].schema_id;
             auto &schemaAction = schemActions_.back();
             schemaAction.setShortText(list.list[i].name);
+            schemaAction.setLongText(list.list[i].schema_id);
             schemaAction.connect<SimpleAction::Activated>(
                 [this, schemaId](InputContext *ic) {
                     auto *state = this->state(ic);
